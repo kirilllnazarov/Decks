@@ -1,4 +1,4 @@
-import type { Deck } from './decks-api'
+import { Deck } from './decks-api.ts'
 
 const initialState = {
   decks: [] as Deck[],
@@ -7,39 +7,56 @@ const initialState = {
   },
 }
 
+type DecksState = typeof initialState
+
 export const decksReducer = (state: DecksState = initialState, action: DecksActions): DecksState => {
   switch (action.type) {
-    case 'SET_DECKS':
+    case 'DECKS/SET-DECKS':
       return {
         ...state,
         decks: action.decks,
       }
-    case 'ADD_DECKS':
-      return { ...state, decks: [action.deck, ...state.decks] }
+    case 'DECKS/ADD-DECK':
+      return {
+        ...state,
+        decks: [action.deck, ...state.decks],
+      }
+    case 'DECKS/DELETE-DECK':
+      return {
+        ...state,
+        decks: state.decks.filter((deck) => deck.id !== action.id),
+      }
+    case 'DECKS/UPDATE-DECK':
+      return {
+        ...state,
+        decks: state.decks.map((deck) => (deck.id === action.updatedDeck.id ? action.updatedDeck : deck)),
+      }
     default:
       return state
   }
 }
 
-// Action Creators
-export const setDecksAC = (decks: Deck[]) => {
-  return {
-    type: 'SET_DECKS',
-    decks,
-  } as const
-}
+type DecksActions =
+  | ReturnType<typeof setDecksAC>
+  | ReturnType<typeof addDeckAC>
+  | ReturnType<typeof deleteDeckAC>
+  | ReturnType<typeof updateDeckAC>
 
-export const addDeskAC = (deck: Deck) => {
-  return {
-    type: 'ADD_DECKS',
-    deck,
-  } as const
-}
+export const setDecksAC = (decks: Deck[]) => ({
+  type: 'DECKS/SET-DECKS' as const,
+  decks,
+})
+export const addDeckAC = (deck: Deck) => ({
+  type: 'DECKS/ADD-DECK' as const,
+  deck,
+})
 
-// Action Types
-type DecksState = typeof initialState
-type SetDecksAT = ReturnType<typeof setDecksAC>
-type AddDecksAT = ReturnType<typeof addDeskAC>
+export const deleteDeckAC = (id: string) => ({
+  type: 'DECKS/DELETE-DECK' as const,
+  id,
+})
 
-// Universal type
-type DecksActions = SetDecksAT | AddDecksAT
+export const updateDeckAC = (updatedDeck: Deck) => ({
+  type: 'DECKS/UPDATE-DECK' as const,
+  updatedDeck,
+})
